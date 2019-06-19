@@ -9,20 +9,8 @@ export const stripHtmlTags = str => {
     return str.replace(/<{1}[^<>]{1,}>{1}/g, " ");
 }
 
-export const getAuthor = (id) => {
-    if (id % 3 === 0) {
-        return "Homer"
-    } else if (id % 2 === 0) {
-        return "JRR Tolkien"
-    } else {
-        return "GRR Martin"
-    }
-}
-
 export const checkValidity = (value, rules) => {
     let invalidProperties = {};
-    console.log(value)
-    console.log(rules)
     if (rules.required && value.trim() === '') {
         invalidProperties.required = true;
     } else if (rules.isEmail) {

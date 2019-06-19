@@ -1,8 +1,8 @@
 // import { connect } from 'react-redux';
 import React, { Component } from "react"
 import axios from "../../axios-base"
-// import _ from "lodash"
-import { Card, Dimmer, Loader, Container } from 'semantic-ui-react'
+import _ from "lodash"
+import { Card, Dimmer, Loader, Container, Select } from 'semantic-ui-react'
 
 import Aux from '../../hoc/Aux/Aux';
 import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
@@ -10,8 +10,14 @@ import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
 class Users extends Component {
   state = {
     users: [],
+    sortBy: "created_on",
     isLoading: false
   }
+
+  sortByOptions = [
+      { key: "created_on", value: "created_on", text: "Created Time" },
+      { key: "fullName", value: "fullName", text: "Name" }
+  ];
 
   componentDidMount() {
     this.setState({
@@ -28,23 +34,36 @@ class Users extends Component {
       })
   }
 
+  sortChangeHandler = (e, options) => {
+      let sorted = _.sortBy(this.state.users, (user) => user[options.value]);
+      this.setState({ sortBy: options.value, users: sorted });
+  }
+
   render() {
     const users = this.state.users;
     let postsJsx;
-    console.log(this.state)
     if (!this.state.isLoading) {
       postsJsx = users.length ?
-        users.map(user => {
-          return (<Card.Group>
-            <Card>
-              <Card.Content>
-                <Card.Header>{user.fullName}</Card.Header>
-                <Card.Meta>{user.userType}</Card.Meta>
-                <Card.Description>{user.user_email}</Card.Description>
-              </Card.Content>
-            </Card>
-          </Card.Group>)
-        }) : <Container style={{ margin: "0 auto", width: "400px" }} textAlign='justified'>
+        <Aux>
+          <div className="new-post-container">
+            <Select
+              value={this.state.sortBy}
+              options={this.sortByOptions}
+              onChange={this.sortChangeHandler} />
+          </div>
+          <Card.Group>
+            {users.map(user => {
+              return (<Card key={user.Id}>
+                <Card.Content>
+                  <Card.Header>{user.fullName}</Card.Header>
+                  <Card.Meta>{user.userType}</Card.Meta>
+                  <Card.Description>{user.user_email}</Card.Description>
+                </Card.Content>
+              </Card>)
+            })}
+          </Card.Group>
+        </Aux>
+        : <Container style={{ margin: "0 auto", width: "400px" }} textAlign='justified'>
           <b>No Records found</b>
         </Container>
     } else {

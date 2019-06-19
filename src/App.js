@@ -6,6 +6,7 @@ import asyncComponent from './hoc/asyncComponent/asyncComponent';
 import Layout from './hoc/Layout/Layout';
 import Logout from './containers/Auth/Logout/Logout';
 import Home from './containers/Home/Home';
+import Charts from "./containers/Charts/Charts"
 import Users from "./containers/Users/Users"
 import Post from './containers/Posts/Post/Post';
 import NewPost from './containers/Posts/NewPost';
@@ -32,6 +33,7 @@ class App extends Component {
       <Switch>
         <Route path="/" exact component={Home} />
         <Route path="/auth" component={asyncAuth} />
+        <Route path="/charts" exact component={Charts} />
         <Route path="/post" exact component={Post} />
         <Route path="/about-us" exact component={AboutUs} />
         <Route path="/contact-us" exact component={ContactUs} />
@@ -58,6 +60,7 @@ class App extends Component {
               <Route path="/users" component={Users} /> : null
           }
           <Route path="/logout" component={Logout} />
+          <Route path="/charts" exact component={Charts} />
           <Route path="/post" exact component={Post} />
           <Route path="/posts/:id" exact component={Post} />
           <Route path="/posts/edit/:id" exact component={NewPost} />
