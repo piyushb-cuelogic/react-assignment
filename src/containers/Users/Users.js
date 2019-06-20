@@ -6,6 +6,7 @@ import { Card, Dimmer, Loader, Container, Select } from 'semantic-ui-react'
 
 import Aux from '../../hoc/Aux/Aux';
 import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
+import ErrorBoundary from "../../hoc/ErrorBoundary/ErrorBoundary"
 
 class Users extends Component {
   state = {
@@ -15,8 +16,8 @@ class Users extends Component {
   }
 
   sortByOptions = [
-      { key: "created_on", value: "created_on", text: "Created Time" },
-      { key: "fullName", value: "fullName", text: "Name" }
+    { key: "created_on", value: "created_on", text: "Created Time" },
+    { key: "fullName", value: "fullName", text: "Name" }
   ];
 
   componentDidMount() {
@@ -35,8 +36,16 @@ class Users extends Component {
   }
 
   sortChangeHandler = (e, options) => {
-      let sorted = _.sortBy(this.state.users, (user) => user[options.value]);
-      this.setState({ sortBy: options.value, users: sorted });
+    let sorted = _.sortBy(this.state.users, (user) => {
+      if (options.value === "updated_on" || options.value === "created_on") {
+        return new Date(parseInt(user[options.value]) * 1000)
+      }
+      if (typeof user[options.value] === "string") {
+        return user[options.value].toLowerCase();
+      }
+      return user[options.value];
+    });
+    this.setState({ sortBy: options.value, users: sorted });
   }
 
   render() {
@@ -71,9 +80,9 @@ class Users extends Component {
     }
 
     return (
-      <Aux>
+      <ErrorBoundary>
         {postsJsx}
-      </Aux>
+      </ErrorBoundary>
     )
   }
 }

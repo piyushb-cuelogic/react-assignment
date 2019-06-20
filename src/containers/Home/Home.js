@@ -3,6 +3,7 @@ import axios from "../../axios-base"
 import _ from "lodash"
 import { Dimmer, Loader, Container, Button, Select } from 'semantic-ui-react'
 
+import ErrorBoundary from "../../hoc/ErrorBoundary/ErrorBoundary"
 import Aux from '../../hoc/Aux/Aux';
 import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
 import Posts from "../../containers/Posts/Posts"
@@ -68,13 +69,27 @@ class Home extends Component {
         } else {
             start = this.perPage * (attrs.activePage - 1);
         }
-        let posts = this.allPosts.slice(start, end);
+        let sortedPosts = this.sortData(this.allPosts, this.state.sortBy);
+        let posts = sortedPosts.slice(start, end);
         this.setState({ posts: posts, isLoading: false });
     }
 
     sortChangeHandler = (e, options) => {
-        let sorted = _.sortBy(this.state.posts, (post) => post[options.value]);
+        let sorted = this.sortData(this.state.posts, options.value)
         this.setState({ sortBy: options.value, posts: sorted });
+    }
+
+    sortData = (posts, sortBy) => {
+        let sortedData = _.sortBy(posts, (post) => {
+            if (sortBy === "updated_on" || sortBy === "created_on") {
+                return new Date(parseInt(post[sortBy]) * 1000)
+            }
+            if (typeof post[sortBy] === "string") {
+                return post[sortBy].toLowerCase()
+            }
+            return post[sortBy];
+        });
+        return sortedData;
     }
 
     render() {
@@ -100,7 +115,7 @@ class Home extends Component {
                     <Posts clicked={this.removePostHandler} posts={posts}></Posts>
                     {this.totalPages > 1 ?
                         <div
-                            style={{ marginTop: "20px", marginRight: "15px", float: "right" }}>
+                            style={{ overflow: "hidden" }}>
                             <Pagination onPageChange={this.onPageChange} totalPages={this.totalPages} />
                         </div>
                         : null}
@@ -113,9 +128,9 @@ class Home extends Component {
         }
 
         return (
-            <Aux>
+            <ErrorBoundary>
                 {postsJsx}
-            </Aux >
+            </ErrorBoundary >
         )
     }
 }
