@@ -19,11 +19,6 @@ const posts = (props) => {
                                     {post.Name} &nbsp;
                                 </Card.Header>
                             </NavLink>
-                            <NavLink
-                                style={{ display: "inline-block" }}
-                                to={'/posts/edit/' + post.Id}>
-                                <Icon name='edit outline' />
-                            </NavLink>
                             <Card.Meta>
                                 <span>{post.Author}</span>
                             </Card.Meta>
@@ -36,6 +31,12 @@ const posts = (props) => {
                                 ConfirmationMessage="Are you sure, you want to delete this post?"
                                 rejectionClick={() => { console.log("clicked") }}
                                 confirmationClick={() => { props.clicked(post.Id) }} />
+                                &nbsp;
+                            <NavLink
+                                style={{ display: "inline-block" }}
+                                to={'/posts/edit/' + post.Id}>
+                                <Icon name='edit outline' size="large" />
+                            </NavLink>
                             <span style={{ float: "right" }}>{updatedDate}</span>
                         </Card.Content>
                     </Card>

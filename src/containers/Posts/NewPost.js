@@ -23,37 +23,6 @@ class NewPost extends Component {
         Description: ""
     }
 
-    // componentWillMount() {
-    //     console.log("componentWillMount")
-    // }
-
-    // componentWillReceiveProps() {
-    //     console.log("componentWillReceiveProps")
-    // }
-
-    shouldComponentUpdate() {
-        console.log("shouldComponentUpdate")
-        return true;
-    }
-
-    // getSnapshotBeforeUpdate(a, b, c) {
-    //     console.log(a,b,c);
-    //     console.log("getSnapshotBeforeUpdate")
-    //     return b;
-    // }
-
-    // componentWillUpdate() {
-    //     console.log("componentWillUpdate")
-    // }
-
-    componentDidUpdate() {
-        console.log("componentDidUpdate")
-    }
-
-    componentWillUnmount() {
-        console.log("componentWillUnmount")
-    }
-
     componentDidMount() {
         this.setState({ isLoading: true });
         axios.get("categories.json/")
@@ -102,7 +71,6 @@ class NewPost extends Component {
     }
 
     handleDesriptionChange = (content, delta, source, editor) => {
-        console.log(content, delta, source, editor)
         let post = { ...this.state.post }
         post.Description = content;
         this.setState({ post });
@@ -111,7 +79,6 @@ class NewPost extends Component {
     handleSubmit = () => {
         const { Name, Author, Description, Category } = this.state.post;
         this.setState({ post: { Name, Author, Description, Category } });
-        console.log(this.state)
         if (!this.validate()) {
             this.setState({ isLoading: true });
             if (this.props.match.params.id) {

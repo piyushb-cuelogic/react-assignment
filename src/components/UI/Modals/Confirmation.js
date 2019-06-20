@@ -9,10 +9,13 @@ class ConfirmationModal extends Component {
   }
 
   close = () => this.setState({ open: false })
+
   render() {
+    const hrefLink = "#";
+
     return <Modal
       open={this.state.open}
-      trigger={<Icon name="remove circle" link onClick={this.closeConfigShow(false, true)} size="large"></Icon>}
+      trigger={<a href={hrefLink} onClick={this.closeConfigShow(false, true)}><Icon name="remove circle" link size="large"></Icon></a>}
       basic size='small'>
       <Header icon='archive' content={this.props.modalTitle} />
       <Modal.Content>
