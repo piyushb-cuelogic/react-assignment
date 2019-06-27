@@ -1,251 +1,241 @@
-import React, { Component } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button, Form, Input, Container, Divider, Message, Dimmer, Loader, Select } from 'semantic-ui-react'
 import ReactQuill from 'react-quill';
+import Validator from "validatorjs";
 import axios from "../../axios-base";
 import Post from "./Post/Post"
+import forIn from "lodash/forIn"
+import { API_ENDPOINTS } from "../../constants"
 
-class NewPost extends Component {
-    state = {
-        post: {
-            Name: "",
-            Author: "",
-            Description: "",
-            Category: "Sports"
-        },
-        categories: [],
-        isPreview: false,
-        isLoading: false
-    }
+const NewPost = (props) => {
+    const [Name, setName] = useState("");
+    const [Author, setAuthor] = useState("");
+    const [Description, setDescription] = useState("");
+    const [Category, setCategory] = useState("Sports");
+    const [categories, setCategories] = useState([]);
+    const [isPreview, setIsPreview] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [validationMessages, setValidationMessages] = useState([]);
 
-    errorMessage = {
-        Name: "",
-        Author: "",
-        Description: ""
-    }
-
-    componentDidMount() {
-        this.setState({ isLoading: true });
-        axios.get("categories.json/")
+    useEffect(() => {
+        setIsLoading(true);
+        axios.get(API_ENDPOINTS.CATEGORIES)
             .then((categoriesResponse) => {
-                let categories = categoriesResponse.data;
-                this.setState({ categories });
-                if (!this.props.match.params.id) {
-                    this.setState({ isLoading: false });
+                setCategories(categoriesResponse.data);
+                if (!props.match.params.id) {
+                    setIsLoading(false);
                     return;
                 }
-                axios.get("posts/" + this.props.match.params.id + ".json/")
+                axios.get(API_ENDPOINTS.getPostApi(props.match.params.id))
                     .then((postsResponse) => {
-                        this.setState({ isLoading: false });
+                        setIsLoading(false);
                         let post = postsResponse.data;
-                        this.setState({ post });
+                        setName(post.Name);
+                        setAuthor(post.Author);
+                        setDescription(post.Description);
+                        setCategory(post.Category);
                     });
             });
-    }
+    }, []);
 
-    validate = () => {
-        this.errorMessage = {
-            Name: "",
-            Author: "",
-            Description: ""
-        };
-        let isError = false;
-        if (!this.state.post.Name) {
-            this.errorMessage.Name = "Please enter title";
-            isError = true;
+    const handleChange = (e, { name, value }) => {
+        switch (name) {
+            case "Name":
+                setName(value);
+                break;
+            case "Author":
+                setAuthor(value);
+                break;
+            case "Category":
+                setCategory(value);
+                break;
+            case "Description":
+                setDescription(value);
+                break;
         }
-        if (!this.state.post.Author) {
-            this.errorMessage.Author = "Please enter author's name";
-            isError = true;
-        }
-        if (!this.state.post.Description) {
-            this.errorMessage.Description = "Please enter description";
-            isError = true;
-        }
-        return isError;
     }
 
-    handleChange = (e, { name, value }) => {
-        let post = { ...this.state.post }
-        post[name] = value;
-        this.setState({ post });
+    const handleDesriptionChange = (content, delta, source, editor) => {
+        setDescription(content);
     }
 
-    handleDesriptionChange = (content, delta, source, editor) => {
-        let post = { ...this.state.post }
-        post.Description = content;
-        this.setState({ post });
-    }
-
-    handleSubmit = () => {
-        const { Name, Author, Description, Category } = this.state.post;
-        this.setState({ post: { Name, Author, Description, Category } });
-        if (!this.validate()) {
-            this.setState({ isLoading: true });
-            if (this.props.match.params.id) {
-                this.editRequest()
+    const handleSubmit = () => {
+        setName(Name);
+        setAuthor(Author);
+        setCategory(Category);
+        setDescription(Description);
+        let validation = new Validator({
+            Name,
+            Author,
+            Description
+        }, {
+                Name: 'required',
+                Author: 'required',
+                Description: 'required'
+            });
+        if (validation.passes()) {
+            setIsLoading(true);
+            if (props.match.params.id) {
+                editRequest()
             } else {
-                this.createRequest();
+                createRequest();
             }
+        } else {
+            setValidationMessages(getValidationMessages(validation.errors.errors));
         }
     }
 
-    createRequest = () => {
-        let post = {
-            ...this.state.post,
+    const getValidationMessages = (errors) => {
+        let validationMessages = [];
+        forIn(errors, (value, key) => {
+            validationMessages.push(<Message key={key}
+                error
+                content={value[0]} />);
+        });
+        return validationMessages;
+    }
+
+    const getErrorObj = () => {
+        let errorObj = {};
+        validationMessages.forEach(item => {
+            errorObj[item.key] = { error: true };
+        });
+        return errorObj;
+    }
+
+    const createRequest = () => {
+        let newPost = {
+            Name,
+            Author,
+            Category,
+            Description,
             created_on: new Date().getTime() / 1000,
             updated_on: new Date().getTime() / 1000
         };
-        axios.post("/posts.json", post)
+        setIsLoading(true);
+        axios.post(API_ENDPOINTS.POSTS, newPost)
             .then(response => {
-                this.setState({ isLoading: false });
-                this.props.history.push({
+                setIsLoading(false);
+                props.history.push({
                     pathname: "/",
                     state: {
                         newPostCreated: true
                     }
                 });
-
             })
     }
 
-    editRequest = () => {
-        let post = {
-            ...this.state.post,
-            updated_on: new Date().getTime() / 1000
+    const editRequest = () => {
+        let editedPost = {
+            Name,
+            Author,
+            Category,
+            Description,
+            updated_on: new Date().getTime() / 1000,
+            isPublished: true
         };
-        axios.put("/posts/" + this.props.match.params.id + ".json", post)
+        axios.put(API_ENDPOINTS.getPostApi(props.match.params.id), editedPost)
             .then(response => {
-                this.setState({ isLoading: false });
-                this.props.history.push({
+                setIsLoading(false);
+                props.history.push({
                     pathname: "/",
                     state: {
                         newPostCreated: true
                     }
                 });
-
-            })
+            });
     }
 
-    getValidationMessage = () => {
-        let validationMessage = [];
-        if (this.errorMessage.Name) {
-            validationMessage.push(<Message key="1"
-                error
-                content={this.errorMessage.Name} />)
-        }
-        if (this.errorMessage.Author) {
-            validationMessage.push(<Message key="2"
-                error
-                content={this.errorMessage.Author} />)
-        }
-        if (this.errorMessage.Description) {
-            validationMessage.push(<Message key="3"
-                error
-                content={this.errorMessage.Description} />)
-        }
-        return validationMessage;
+    const changePreview = () => {
+        let isPreviewNegation = !isPreview
+        setIsPreview(isPreviewNegation);
     }
 
-    changePreview() {
-        this.setState({ isPreview: !this.state.isPreview })
+    let errorObj = getErrorObj();
+
+    let categoryList = [];
+    categories.forEach(cat => categoryList.push({ key: cat, value: cat, text: cat }));
+
+    const pageTitle = props.match.params.id ? "Edit post" : "Create new post"
+    const descriptionClassNames = errorObj.Description ? "field error" : "field";
+    const buttonTitle = props.match.params.id ? "Update Post" : "Create Post"
+
+    let continueButton = isPreview ? <Form.Field
+        control={Button} primary onClick={() => changePreview()}>
+        Continue Editing</Form.Field> : null
+
+    let previewPost = Name || Author || Description
+        ? <Form.Field
+            control={Button} primary onClick={() => changePreview()}>
+            Preview Post</Form.Field> : null
+
+    let form = <Form onSubmit={handleSubmit} noValidate>
+        <Form.Group widths='equal'>
+            <Form.Field
+                autoComplete='off'
+                name='Name'
+                value={Name}
+                onChange={handleChange}
+                {...errorObj.Name}
+                control={Input}
+                label='Name'
+                placeholder='Name' />
+            <Form.Field
+                autoComplete='off'
+                name='Author'
+                value={Author}
+                onChange={handleChange}
+                {...errorObj.Author}
+                control={Input}
+                label='Author'
+                placeholder='Author' />
+            <Form.Field
+                name='Category'
+                value={Category}
+                onChange={handleChange}
+                control={Select}
+                options={categoryList}
+                label='Category'
+                placeholder='Category' />
+        </Form.Group>
+        <div className={descriptionClassNames}>
+            <label>Description</label>
+            <ReactQuill
+                name='Description'
+                value={Description}
+                {...errorObj.Description}
+                onChange={handleDesriptionChange} />
+        </div>
+        <Form.Group>
+            <Form.Field
+                control={Button} primary>{buttonTitle}</Form.Field>
+            {previewPost}
+        </Form.Group>
+    </Form>
+    let post = {
+        Name,
+        Author,
+        Description,
+        Category
+    };
+    let postJsx = <Post previewPost="true" post={post} ></Post>
+    let pageContent = isPreview ? postJsx : form;
+
+    let newPostJsx;
+    if (!isLoading) {
+        newPostJsx = <Container textAlign='justified'>
+            <b>{pageTitle}</b>
+            <Divider />
+            {[...validationMessages]}
+            {pageContent}
+            <br />
+            {continueButton}
+        </Container>
+    } else {
+        newPostJsx = <Dimmer active><Loader /></Dimmer>
     }
 
-    render() {
-        let categories = [];
-        this.state.categories.forEach(cat => categories.push({ key: cat, value: cat, text: cat }));
-
-        const { Name, Author, Description, Category } = this.state.post;
-
-        const errorObj = {
-            Name: {
-                error: this.errorMessage.Name ? true : null
-            },
-            Author: {
-                error: this.errorMessage.Author ? true : null
-            },
-            Description: {
-                error: this.errorMessage.Description ? true : null
-            },
-        }
-        const pageTitle = this.props.match.params.id ? "Edit post" : "Create new post"
-        const descriptionClassNames = this.errorMessage.Description ? "field error" : "field";
-        const buttonTitle = this.props.match.params.id ? "Update Post" : "Create Post"
-        let validationMessage = this.getValidationMessage();
-
-        let newPostJsx;
-
-        let continueButton = this.state.isPreview ? <Form.Field
-            control={Button} primary onClick={() => this.changePreview()}>
-            Continue Editing</Form.Field> : null
-
-        let previewPost = this.state.post.Id || this.state.post.Name || this.state.post.Author || this.state.post.Description
-            ? <Form.Field
-                control={Button} primary onClick={() => this.changePreview()}>
-                Preview Post</Form.Field> : null
-
-        let form = <Form onSubmit={this.handleSubmit} noValidate>
-            <Form.Group widths='equal'>
-                <Form.Field
-                    autoComplete='off'
-                    name='Name'
-                    value={Name}
-                    onChange={this.handleChange}
-                    {...errorObj.Name}
-                    control={Input}
-                    label='Title'
-                    placeholder='Title' />
-                <Form.Field
-                    autoComplete='off'
-                    name='Author'
-                    value={Author}
-                    onChange={this.handleChange}
-                    {...errorObj.Author}
-                    control={Input}
-                    label='Author'
-                    placeholder='Author' />
-                <Form.Field
-                    name='Category'
-                    value={Category}
-                    onChange={this.handleChange}
-                    control={Select}
-                    options={categories}
-                    label='Category'
-                    placeholder='Category' />
-            </Form.Group>
-            <div className={descriptionClassNames}>
-                <label>Description</label>
-                <ReactQuill
-                    name='Description'
-                    value={Description}
-                    {...errorObj.Description}
-                    onChange={this.handleDesriptionChange} />
-            </div>
-            <Form.Group>
-                <Form.Field
-                    control={Button} primary>{buttonTitle}</Form.Field>
-                {previewPost}
-            </Form.Group>
-        </Form>
-
-        let post = <Post previewPost="true" post={this.state.post} ></Post>
-
-        let pageContent = this.state.isPreview ? post : form;
-
-        if (!this.state.isLoading) {
-            newPostJsx = <Container textAlign='justified'>
-                <b>{pageTitle}</b>
-                <Divider />
-                {[...validationMessage]}
-                {pageContent}
-                <br />
-                {continueButton}
-            </Container>
-        } else {
-            newPostJsx = <Dimmer active><Loader /></Dimmer>
-        }
-
-        return newPostJsx
-    }
+    return newPostJsx
 }
 
-export default NewPost
+export default NewPost;
