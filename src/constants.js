@@ -6,3 +6,5 @@ export const API_ENDPOINTS = {
     getCategoriesApi: (id) => "categories/" + id + ".json/",
     getUsersApi: (id) => "users/" + id + ".json/",
 };
+
+export const FIREBASE_API = process.env.REACT_APP_FIREBASE_API;

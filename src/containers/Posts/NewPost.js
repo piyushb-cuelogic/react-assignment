@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Button, Form, Input, Container, Divider, Message, Dimmer, Loader, Select } from 'semantic-ui-react'
+import FromInput from "../../components/UI/Input/Input"
 import ReactQuill from 'react-quill';
 import Validator from "validatorjs";
 import axios from "../../axios-base";
@@ -171,29 +172,27 @@ const NewPost = (props) => {
 
     let form = <Form onSubmit={handleSubmit} noValidate>
         <Form.Group widths='equal'>
-            <Form.Field
-                autoComplete='off'
+            <FromInput
                 name='Name'
-                value={Name}
-                onChange={handleChange}
-                {...errorObj.Name}
-                control={Input}
+                val={Name}
+                handleChange={handleChange}
+                inputProperties={{...errorObj.Name}}
                 label='Name'
-                placeholder='Name' />
-            <Form.Field
-                autoComplete='off'
+                placeholder='Name'
+            />
+            <FromInput
                 name='Author'
-                value={Author}
-                onChange={handleChange}
-                {...errorObj.Author}
+                val={Author}
+                handleChange={handleChange}
+                inputProperties={{...errorObj.Author}}
                 control={Input}
                 label='Author'
                 placeholder='Author' />
-            <Form.Field
+            <FromInput
+                elementType="select"
                 name='Category'
-                value={Category}
-                onChange={handleChange}
-                control={Select}
+                val={Category}
+                handleChange={handleChange}
                 options={categoryList}
                 label='Category'
                 placeholder='Category' />

@@ -7,7 +7,6 @@ import { Dimmer, Loader, Container, Button, Select } from 'semantic-ui-react'
 import ErrorBoundary from "../../hoc/ErrorBoundary/ErrorBoundary";
 import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
 import Posts from "../../containers/Posts/Posts";
-import { stripHtmlTags } from "../../shared/utility";
 import Pagination from "../../components/UI/Pagination/Pagination";
 import { NavLink } from 'react-router-dom';
 import { API_ENDPOINTS } from "../../constants"

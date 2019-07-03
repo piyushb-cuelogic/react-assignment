@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { checkValidity } from "../../shared/utility"
 import { Redirect } from 'react-router-dom';
 import Validator from "validatorjs"
 
