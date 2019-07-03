@@ -52,7 +52,7 @@ const renderActiveShape = (props) => {
 };
 
 
-export default class Example extends PureComponent {
+export default class PostsByCategoryChart extends PureComponent {
 
     constructor(props) {
         super(props)

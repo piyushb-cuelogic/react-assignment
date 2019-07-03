@@ -1,10 +1,9 @@
-// import { connect } from 'react-redux';
 import React, { Component } from "react"
 import axios from "../../axios-base"
-import _ from "lodash"
+import sortBy from "lodash/sortBy"
 import { Card, Dimmer, Loader, Container, Select } from 'semantic-ui-react'
+import {API_ENDPOINTS} from "../../constants"
 
-import Aux from '../../hoc/Aux/Aux';
 import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
 import ErrorBoundary from "../../hoc/ErrorBoundary/ErrorBoundary"
 
@@ -24,7 +23,7 @@ class Users extends Component {
     this.setState({
       isLoading: true
     });
-    axios.get("/users.json")
+    axios.get(API_ENDPOINTS.USERS)
       .then((response) => {
         let users = [];
         for (let key in response.data) {
@@ -36,7 +35,7 @@ class Users extends Component {
   }
 
   sortChangeHandler = (e, options) => {
-    let sorted = _.sortBy(this.state.users, (user) => {
+    let sorted = sortBy(this.state.users, (user) => {
       if (options.value === "updated_on" || options.value === "created_on") {
         return new Date(parseInt(user[options.value]) * 1000)
       }
@@ -53,7 +52,7 @@ class Users extends Component {
     let postsJsx;
     if (!this.state.isLoading) {
       postsJsx = users.length ?
-        <Aux>
+        <React.Fragment>
           <div className="new-post-container">
             <Select
               value={this.state.sortBy}
@@ -71,7 +70,7 @@ class Users extends Component {
               </Card>)
             })}
           </Card.Group>
-        </Aux>
+        </React.Fragment>
         : <Container style={{ margin: "0 auto", width: "400px" }} textAlign='justified'>
           <b>No Records found</b>
         </Container>

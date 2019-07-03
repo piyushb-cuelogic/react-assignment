@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { checkValidity } from "../../shared/utility"
 import { Redirect } from 'react-router-dom';
+import Validator from "validatorjs"
 
 import { Button, Form, Message, Dimmer, Loader, Grid, Header, Segment } from 'semantic-ui-react'
 
@@ -40,86 +41,24 @@ class Auth extends Component {
     }
 
     validate = () => {
-        let stateProps = {
-            email: "",
-            password: ""
-        };
-
         const rules = {
-            email: {
-                required: true,
-                minLength: 6,
-                maxLength: 45,
-                isEmail: true,
-            },
-            password: {
-                required: true,
-                minLength: 6,
-                maxLength: 20
-            },
-            fullName: {
-                required: true,
-                minLength: 6,
-                maxLength: 35
-            }
+            email: 'required|email|min:6|max:45',
+            password: 'required|min:6|max:20',
+            fullName: 'required|min:6|max:35'
         };
 
-        if (this.state.isSignup) {
-            stateProps.fullName = "";
+        let form = {...this.state.form};
+
+        if (!this.state.isSignup) {
+            delete form.fullName;
+            delete rules.fullName;
         }
 
-        this.setState({
-            errorMessage: stateProps
-        });
+        console.log(form, rules)
 
-        let isError = false;
-        let errorMessage = { ...this.state.errorMessage };
-        let emailValidity = checkValidity(this.state.form.email, rules.email)
-        let passwordlValidity = checkValidity(this.state.form.password, rules.password)
-
-        if (emailValidity.required) {
-            errorMessage.email = "Please enter email"
-            isError = true;
-        } else if (emailValidity.minLength) {
-            errorMessage.email = "Email address should at least contain " + rules.email.minLength + " characters";
-            isError = true;
-        } else if (emailValidity.maxLength) {
-            errorMessage.email = "Email address should at max contain " + rules.email.maxLength + " characters";
-            isError = true;
-        } else if (emailValidity.isEmail) {
-            errorMessage.email = "Invalid email address";
-            isError = true;
-        }
-
-        if (passwordlValidity.required) {
-            errorMessage.password = "Please enter password";
-            isError = true;
-        } else if (passwordlValidity.minLength) {
-            errorMessage.password = "Password should at least contain " + rules.password.minLength + " characters";
-            isError = true;
-        } else if (passwordlValidity.maxLength) {
-            errorMessage.password = "Password should at max contain " + rules.password.maxLength + " characters";
-            isError = true;
-        }
-
-        if (this.state.isSignup) {
-            let fullNamelValidity = checkValidity(this.state.form.fullName, rules.fullName)
-            if (fullNamelValidity.required) {
-                errorMessage.fullName = "Please enter full name";
-                isError = true;
-            } else if (fullNamelValidity.minLength) {
-                errorMessage.fullName = "Full name should at least contain " + rules.fullName.minLength + " characters";
-                isError = true;
-            } else if (fullNamelValidity.maxLength) {
-                errorMessage.fullName = "Full name should at max contain " + rules.fullName.maxLength + " characters";
-                isError = true;
-            }
-        }
-
-        if (isError) {
-            this.setState({ errorMessage });
-        }
-
+        let validation = new Validator(form, rules);
+        let isError = validation.fails();
+        this.setState({ errorMessage: validation.errors.errors });
         return isError;
     }
 
@@ -247,92 +186,3 @@ const mapDispatchToProps = dispatch => {
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Auth);
-
-
-
-        // return (
-        //     <div className={classes.Auth}>
-        //         {authRedirect}
-        //         {errorMessage}
-        //         <form onSubmit={this.submitHandler}>
-        //             {form}
-        //             <Button
-        //                 btnType="Success"
-        //             >SUBMIT</Button>
-        //         </form>
-        //         <Button
-        //             clicked={this.switchAuthModeHandler}
-        //             btnType="Danger">SWITCH TO {this.state.isSignup ? 'SIGNIN' : 'SIGNUP'}</Button>
-        //     </div>
-        // );
-
-    // componentDidMount () {
-    //     if ( !this.props.buildingBurger && this.props.authRedirectPath !== '/' ) {
-    //         this.props.onSetAuthRedirectPath();
-    //     }
-    // }
-
-    // submitHandler = (event) => {
-    //     event.preventDefault();
-    //     // if (!this.validateForm()) {
-    //     //     return;
-    //     // }
-    //     this.props.onAuth(this.state.controls.email.value, this.state.controls.password.value, this.state.isSignup);
-    // }
-
-    // switchAuthModeHandler = () => {
-    //     this.setState(prevState => {
-    //         var newState = JSON.parse(JSON.stringify(prevState));
-    //         if(prevState.isSignup) {
-    //             newState.controls.fullName = {
-    //                 elementType: 'input',
-    //                 elementConfig: {
-    //                     type: 'text',
-    //                     placeholder: 'Full Name'
-    //                 },
-    //                 value: '',
-    //                 validation: {
-    //                     required: true,
-    //                     isEmail: false
-    //                 },
-    //                 valid: false,
-    //                 touched: false
-    //             };
-    //             newState.isSignup = !newState.isSignup;
-    //         } else {
-    //             delete newState.controls.fullName;
-    //             newState.isSignup = !newState.isSignup;
-    //         }
-    //         return newState;
-    //     });
-    // }
-
-    // validateForm = () => {
-    //     let errorMessage = "";
-    //     if (!this.state.controls.email.value && !this.state.controls.password.value) {
-    //         errorMessage = "Please enter mail address & password";
-    //     } else if (!this.state.controls.email.value) {
-    //         errorMessage = "Please enter mail address"
-    //     } else if (!this.state.controls.password.value) {
-    //         errorMessage = "Please enter password"
-    //     }
-    //     if (errorMessage) {
-    //         this.setState({
-    //             errorMessage: (
-    //                 <p>{errorMessage}</p>
-    //             )
-    //         });
-    //         return false;
-    //     }
-    //     return true;
-    // }
-
-    // componentDidUpdate() {
-    //     if (this.props.error) {
-    //         this.setState({
-    //             errorMessage: (
-    //                 <p>{this.props.error.message}</p>
-    //             )
-    //         });
-    //     }
-    // }

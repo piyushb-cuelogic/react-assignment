@@ -1,15 +1,17 @@
 import React, { Component } from 'react';
 import axios from "../../axios-base"
-import _ from "lodash"
+import remove from "lodash/remove"
+import sortBy from "lodash/sortBy"
 import { Dimmer, Loader, Container, Button, Select } from 'semantic-ui-react'
 
-import ErrorBoundary from "../../hoc/ErrorBoundary/ErrorBoundary"
-import Aux from '../../hoc/Aux/Aux';
+import ErrorBoundary from "../../hoc/ErrorBoundary/ErrorBoundary";
 import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
-import Posts from "../../containers/Posts/Posts"
-import { stripHtmlTags } from "../../shared/utility"
-import Pagination from "../../components/UI/Pagination/Pagination"
+import Posts from "../../containers/Posts/Posts";
+import { stripHtmlTags } from "../../shared/utility";
+import Pagination from "../../components/UI/Pagination/Pagination";
 import { NavLink } from 'react-router-dom';
+import { API_ENDPOINTS } from "../../constants"
+import postsWrapper from "../../hoc/postsWrapper/postsWrapper";
 
 class Home extends Component {
     state = {
@@ -30,33 +32,17 @@ class Home extends Component {
 
 
     componentDidMount() {
-        this.setState({
-            isLoading: true
-        });
-        axios.get("/posts.json")
-            .then((response) => {
-                let posts = [];
-                for (let key in response.data) {
-                    if (response.data[key].isPublished) {
-                        response.data[key].Id = key;
-                        response.data[key].Description = stripHtmlTags(response.data[key].Description.substr(0, 240)) + "..."
-                        this.allPosts.push(response.data[key])
-                    }
-                }
-                this.totalPages = Math.ceil(this.allPosts.length / this.perPage);
-                posts = this.allPosts.slice(0, this.perPage);
-                this.setState({ posts: posts, isLoading: false });
-            })
+        this.setState({ posts: this.props.posts, isLoading: false });
     }
 
     removePostHandler = (id) => {
         this.setState({
             isLoading: true
         });
-        axios.delete("posts/" + id + ".json/")
+        axios.delete(API_ENDPOINTS.getPostApi(id))
             .then((response) => {
                 let posts = this.state.posts.slice();
-                _.remove(posts, post => post.Id === id);
+                remove(posts, post => post.Id === id);
                 this.setState({ posts: posts, isLoading: false });
             });
     }
@@ -79,15 +65,15 @@ class Home extends Component {
         this.setState({ sortBy: options.value, posts: sorted });
     }
 
-    sortData = (posts, sortBy) => {
-        let sortedData = _.sortBy(posts, (post) => {
-            if (sortBy === "updated_on" || sortBy === "created_on") {
-                return new Date(parseInt(post[sortBy]) * 1000)
+    sortData = (posts, sortByValue) => {
+        let sortedData = sortBy(posts, (post) => {
+            if (sortByValue === "updated_on" || sortByValue === "created_on") {
+                return new Date(parseInt(post[sortByValue]) * 1000)
             }
-            if (typeof post[sortBy] === "string") {
-                return post[sortBy].toLowerCase()
+            if (typeof post[sortByValue] === "string") {
+                return post[sortByValue].toLowerCase()
             }
-            return post[sortBy];
+            return post[sortByValue];
         });
         return sortedData;
     }
@@ -97,7 +83,7 @@ class Home extends Component {
         let postsJsx;
         if (!this.state.isLoading) {
             postsJsx = posts.length ?
-                <Aux>
+                <React.Fragment>
                     <div className="new-post-container">
                         <NavLink to="/post/new" className="pull-right margin-right-15">
                             <Button primary>New Post</Button>
@@ -119,7 +105,7 @@ class Home extends Component {
                             <Pagination onPageChange={this.onPageChange} totalPages={this.totalPages} />
                         </div>
                         : null}
-                </Aux> :
+                </React.Fragment> :
                 <Container style={{ margin: "0 auto", width: "400px" }} textAlign='justified'>
                     <b>No Records found</b>
                 </Container>
@@ -135,4 +121,4 @@ class Home extends Component {
     }
 }
 
-export default withErrorHandler(Home, axios);
+export default withErrorHandler(postsWrapper("published")(Home), axios);

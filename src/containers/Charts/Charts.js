@@ -2,9 +2,9 @@ import React, { Component } from "react"
 import { Dimmer, Loader, Divider } from "semantic-ui-react"
 
 import axios from "./../../axios-base"
-import Aux from "../../hoc/Aux/Aux"
-import DonutChart from "./DonutChart"
-import PieChart from "./PieChart"
+import PostsByCategoryChart from "./PostsByCategoryChart"
+import PostsByAuthorChart from "./PostsByAuthorChart"
+import { API_ENDPOINTS } from "../../constants";
 
 class Charts extends Component {
     state = {
@@ -19,11 +19,11 @@ class Charts extends Component {
         this.setState({
             isLoading: true
         });
-        axios.get("categories.json/")
+        axios.get(API_ENDPOINTS.CATEGORIES)
             .then((categoriesResponse) => {
                 let categories = categoriesResponse.data;
                 this.setState({ categories });
-                return axios.get("/posts.json")
+                return axios.get(API_ENDPOINTS.POSTS)
             })
             .then((response) => {
                 let allPosts = [];
@@ -46,23 +46,23 @@ class Charts extends Component {
         let postsJsx;
         if (!this.state.isLoading) {
             postsJsx = (
-                <Aux>
+                <React.Fragment>
                     <div>
                         <div className="chart-container">
                             <div className="chart-title">Donut Chart - Posts Per Category</div>
-                            <DonutChart
+                            <PostsByCategoryChart
                                 posts={this.state.allPosts}
                                 categories={this.state.categories} />
                         </div>
                         < Divider />
                         <div className="chart-container">
                             <div className="chart-title">Pie Chart - Posts Per Author</div>
-                            <PieChart
+                            <PostsByAuthorChart
                                 posts={this.state.allPosts}
                                 categories={this.state.categories} />
                         </div>
                     </div>
-                </Aux>
+                </React.Fragment>
             )
         } else {
             postsJsx = <Dimmer active><Loader /></Dimmer>
