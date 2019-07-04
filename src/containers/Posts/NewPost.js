@@ -170,32 +170,39 @@ const NewPost = (props) => {
             control={Button} primary onClick={() => changePreview()}>
             Preview Post</Form.Field> : null
 
+    let formOptions = {
+        name: {
+            name: 'Name',
+            val: Name,
+            handleChange,
+            inputProperties: { ...errorObj.Name },
+            label: 'Name',
+            placeholder: 'Name'
+        },
+        author: {
+            name: 'Author',
+            val: Author,
+            handleChange,
+            inputProperties: { ...errorObj.Author },
+            label: 'Author',
+            placeholder: 'Author'
+        },
+        category: {
+            elementType: "select",
+            name: 'Category',
+            val: Category,
+            handleChange,
+            options: categoryList,
+            label: 'Category',
+            placeholder: 'Category'
+        }
+    }
+
     let form = <Form onSubmit={handleSubmit} noValidate>
         <Form.Group widths='equal'>
-            <FromInput
-                name='Name'
-                val={Name}
-                handleChange={handleChange}
-                inputProperties={{...errorObj.Name}}
-                label='Name'
-                placeholder='Name'
-            />
-            <FromInput
-                name='Author'
-                val={Author}
-                handleChange={handleChange}
-                inputProperties={{...errorObj.Author}}
-                control={Input}
-                label='Author'
-                placeholder='Author' />
-            <FromInput
-                elementType="select"
-                name='Category'
-                val={Category}
-                handleChange={handleChange}
-                options={categoryList}
-                label='Category'
-                placeholder='Category' />
+            <FromInput options={formOptions.name} />
+            <FromInput options={formOptions.author} />
+            <FromInput options={formOptions.category} />
         </Form.Group>
         <div className={descriptionClassNames}>
             <label>Description</label>
@@ -217,7 +224,7 @@ const NewPost = (props) => {
         Description,
         Category
     };
-    let postJsx = <Post previewPost="true" post={post} ></Post>
+    let postJsx = <Post previewPost post={post} ></Post>
     let pageContent = isPreview ? postJsx : form;
 
     let newPostJsx;

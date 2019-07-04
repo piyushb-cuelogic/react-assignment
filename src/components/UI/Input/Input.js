@@ -11,17 +11,17 @@ const input = (props) => {
         inputClasses.push(classes.Invalid);
     }
 
-    switch (props.elementType) {
+    switch (props.options.elementType) {
         case ('input'):
             inputElement = <Form.Field
                 autoComplete='off'
-                name={props.name}
-                value={props.val}
-                onChange={props.handleChange}
-                {...props.inputProperties}
+                name={props.options.name}
+                value={props.options.val}
+                onChange={props.options.handleChange}
+                {...props.options.inputProperties}
                 control={Input}
-                label={props.label}
-                placeholder={props.placeholder} />;
+                label={props.options.label}
+                placeholder={props.options.placeholder} />;
             break;
         case ('textarea'):
             inputElement = <textarea
@@ -33,25 +33,25 @@ const input = (props) => {
         case ('select'):
             inputElement = (
                 <Form.Field
-                    name={props.name}
-                    value={props.val}
-                    onChange={props.handleChange}
+                    name={props.options.name}
+                    value={props.options.val}
+                    onChange={props.options.handleChange}
                     control={Select}
-                    options={props.options}
-                    label={props.label}
-                    placeholder={props.placeholder} />
+                    options={props.options.options}
+                    label={props.options.label}
+                    placeholder={props.options.placeholder} />
             );
             break;
         default:
             inputElement = <Form.Field
                 autoComplete='off'
-                name={props.name}
-                value={props.val}
-                onChange={props.handleChange}
-                {...props.inputProperties}
+                name={props.options.name}
+                value={props.options.val}
+                onChange={props.options.handleChange}
+                {...props.options.inputProperties}
                 control={Input}
-                label={props.label}
-                placeholder={props.placeholder} />;
+                label={props.options.label}
+                placeholder={props.options.placeholder} />;
     }
 
     return inputElement;

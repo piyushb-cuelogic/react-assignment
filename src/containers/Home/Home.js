@@ -20,9 +20,6 @@ class Home extends Component {
         isAdmin: localStorage.getItem("userType") === "ADMIN"
     }
 
-    perPage = 10;
-    allPosts = [];
-    totalPages = 0;
     sortByOptions = [
         { key: "created_on", value: "created_on", text: "Created Time" },
         { key: "updated_on", value: "updated_on", text: "Updated Time" },
@@ -31,7 +28,13 @@ class Home extends Component {
 
 
     componentDidMount() {
-        this.setState({ posts: this.props.posts, isLoading: false });
+        this.setState({
+            posts: this.props.posts,
+            allPosts: this.props.allPosts,
+            perPage: this.props.perPage,
+            totalPages: this.props.totalPages,
+            isLoading: false
+        });
     }
 
     removePostHandler = (id) => {
@@ -47,14 +50,14 @@ class Home extends Component {
     }
 
     onPageChange = (event, attrs) => {
-        let end = attrs.activePage * this.perPage;
+        let end = attrs.activePage * this.state.perPage;
         let start = 0;
         if (attrs.activePage === 2) {
-            start = this.perPage;
+            start = this.state.perPage;
         } else {
-            start = this.perPage * (attrs.activePage - 1);
+            start = this.state.perPage * (attrs.activePage - 1);
         }
-        let sortedPosts = this.sortData(this.allPosts, this.state.sortBy);
+        let sortedPosts = this.sortData(this.state.allPosts, this.state.sortBy);
         let posts = sortedPosts.slice(start, end);
         this.setState({ posts: posts, isLoading: false });
     }
@@ -78,6 +81,7 @@ class Home extends Component {
     }
 
     render() {
+        console.log(this.state)
         const posts = this.state.posts;
         let postsJsx;
         if (!this.state.isLoading) {
@@ -98,10 +102,10 @@ class Home extends Component {
                             onChange={this.sortChangeHandler} />
                     </div>
                     <Posts clicked={this.removePostHandler} posts={posts}></Posts>
-                    {this.totalPages > 1 ?
+                    {this.state.totalPages > 1 ?
                         <div
                             style={{ overflow: "hidden" }}>
-                            <Pagination onPageChange={this.onPageChange} totalPages={this.totalPages} />
+                            <Pagination onPageChange={this.onPageChange} totalPages={this.state.totalPages} />
                         </div>
                         : null}
                 </React.Fragment> :

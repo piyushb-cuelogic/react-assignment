@@ -8,12 +8,11 @@ const postsWrapper = wrapperProps => (WrappedComponent) => {
     return class extends Component {
         state = {
             posts: [],
-            isLoading: false
+            allPosts: [],
+            isLoading: false,
+            perPage: 10,
+            totalPages: 0,
         }
-
-        perPage = 20;
-        allPosts = [];
-        totalPages = 0;
 
         componentDidMount() {
             this.setState({
@@ -21,19 +20,19 @@ const postsWrapper = wrapperProps => (WrappedComponent) => {
             });
             axios.get(API_ENDPOINTS.POSTS)
                 .then((response) => {
-                    let posts = [];
+                    let allPosts = [];
                     for (let key in response.data) {
                         response.data[key].Id = key;
                         response.data[key].Description = stripHtmlTags(response.data[key].Description.substr(0, 240)) + "..."
                         if (wrapperProps === "unpublished" && !response.data[key].isPublished) {
-                            this.allPosts.push(response.data[key])
+                            allPosts.push(response.data[key])
                         } else if (wrapperProps !== "unpublished" && response.data[key].isPublished) {
-                            this.allPosts.push(response.data[key])
+                            allPosts.push(response.data[key])
                         }
                     }
-                    this.totalPages = Math.ceil(this.allPosts.length / 20);
-                    posts = this.allPosts.slice(0, 20);
-                    this.setState({ posts: posts, isLoading: false });
+                    let totalPages = Math.ceil(allPosts.length / this.state.perPage);
+                    let posts = allPosts.slice(0, this.state.perPage);
+                    this.setState({ posts, allPosts, isLoading: false, totalPages });
                 });
         }
 
